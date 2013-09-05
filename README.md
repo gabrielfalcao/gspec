@@ -1,5 +1,7 @@
 # gspec
 
+[![Build Status](https://travis-ci.org/gabrielfalcao/gspec.png?branch=master)](https://travis-ci.org/gabrielfalcao/gspec)
+
 It started as a weekend experiment on making a pretty test runner for
 go, then I started to write some base tests using conventional go test
 libraries and building my own assertion based such axioms.
