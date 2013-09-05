@@ -1,4 +1,4 @@
-package hawkeye
+package gspec
 import (
 	"fmt"
 	"bytes"
@@ -6,7 +6,7 @@ import (
 	"go/token"
 	"go/parser"
 	"go/format"
-	"falcao.it/hawkeye/filesystem"
+	"falcao.it/gspec/filesystem"
 )
 
 func HandleError(pos token.Position, msg string) {

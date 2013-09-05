@@ -1,5 +1,5 @@
 package foo
-import . "falcao.it/hawkeye"
+import . "falcao.it/gspec"
 
 func Feature(){
 	Describe("The sum operation", func(){

@@ -12,7 +12,7 @@ parse a file, finds its specs and run them.
 
 ```go
 package foo
-import . "falcao.it/hawkeye"
+import . "falcao.it/gspec"
 
 func Feature(){
 	Describe("The sum operation", func(){
@@ -38,7 +38,7 @@ func Feature(){
 **Then you can run like this:**
 
 ```bash
-go run hawkeye.go ./foo/
+go run gspec.go ./foo/
 ```
 
 **And see the results**

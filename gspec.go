@@ -1,4 +1,4 @@
-package main
+package gspec
 import (
 	"os"
 	"os/exec"
@@ -6,18 +6,26 @@ import (
 	"strings"
 	"crypto/md5"
 	"go/token"
-	"falcao.it/hawkeye/filesystem"
-	. "falcao.it/hawkeye/scanner"
+	"falcao.it/gspec/filesystem"
+	. "falcao.it/gspec/scanner"
 )
 const INDENTATION_LEVEL = 2
+
 var indent int
 
 type Expectation struct {
-	source int
+	source interface{}
+	positive bool
 	To *Expectation
+	Not *Expectation
 }
-func (self *Expectation) Equal(other int) bool {
-	return self.source == other
+
+func (self *Expectation) Equal(other interface{}) {
+	// expected := fmt.Sprintf("%v", other)
+	// got := fmt.Sprintf("%v", self.source)
+	if self.source != other {
+		panic(fmt.Sprintf("expected \"%v\" to equal \"%v\"", self.source, other))
+	}
 }
 
 type TestCreator func(int) Expectation
@@ -41,9 +49,15 @@ func (self *TestResult) Failed() bool {
 	return self.failure != nil || self.error != nil
 }
 
-func Expect(source int) Expectation{
-	x := Expectation{source, nil}
+func Expect(source interface{}) Expectation{
+	// starting with a positive expectation
+	x := Expectation{source, true, nil, nil}
+	// and creating a link to self
 	x.To = &x
+	// and creating a respective negative expectation
+	x.Not = &Expectation{source, false, nil, nil}
+	// and its self link as well
+	x.Not.To = x.Not
 	return x
 }
 func Effectively(spec TestCallback) {
@@ -76,6 +90,10 @@ func Then(description string, run_da_spec TestCallback) {
 	ShowCallback("Then", description)
 	Effectively(run_da_spec)
 }
+func And(description string, run_da_spec TestCallback) {
+	ShowCallback("And", description)
+	Effectively(run_da_spec)
+}
 
 func Describe(description string, run_da_suite TestCallback) {
 	ShowCallback("Describe", description)
@@ -87,7 +105,7 @@ func ReportError(message string, params ...interface{}){
 	fmt.Printf("\033[0;31mERROR: \033[1;37m%s\033[0m\n", fmt.Sprintf(message, params...))
 }
 
-func main() {
+func Run() {
 	var here filesystem.Node
 	var err error
 	if len(os.Args) == 1 {
@@ -109,7 +127,6 @@ func main() {
 	}
 	fset := token.NewFileSet()
 
-
 	for _, file := range files {
 		imports, specs := ParseFile(file, *fset)
 		if len(specs) == 0 {
@@ -118,7 +135,7 @@ func main() {
 		hash := md5.New()
 		hash.Write([]byte(file.Path()))
 
-		specFileName := fmt.Sprintf("hawkeye_%x.go", hash.Sum(nil))
+		specFileName := fmt.Sprintf("gspec_%x.go", hash.Sum(nil))
 		specFile, err := here.NewFile(specFileName)
 		if err != nil {
 			ReportError("%s", err)
