@@ -1,9 +1,12 @@
-# Hawkeye
+# gspec
 
-A weekend experiment on making a pretty test runner for go.
+It started as a weekend experiment on making a pretty test runner for
+go, then I started to write some base tests using conventional go test
+libraries and building my own assertion based such axioms.
 
-It's not but a very simple prototype on using go's own ast package to
-parse a file, finds its specs and run them.
+## how it works
+
+everything is synchronous, I built it for myself so I can have an efficient TDD flow with unit tests in go. The main idea is to reduce as much as possible the friction in: writing, running and debugging tests in go.
 
 
 ## playing
