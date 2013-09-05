@@ -1,8 +1,8 @@
 package specs
 
 import (
-	. "falcao.it/gspec"
-	Ensure "falcao.it/gspec/ensure"
+	. "github.com/gabrielfalcao/gspec"
+	Ensure "github.com/gabrielfalcao/gspec/ensure"
 )
 
 

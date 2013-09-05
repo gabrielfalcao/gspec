@@ -17,7 +17,7 @@ everything is synchronous, I built it for myself so I can have an efficient TDD 
 
 ```go
 package foo
-import . "falcao.it/gspec"
+import . "github.com/gabrielfalcao/gspec"
 
 func Feature(){
 	Describe("The sum operation", func(){

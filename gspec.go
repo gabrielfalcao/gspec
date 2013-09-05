@@ -6,8 +6,8 @@ import (
 	"strings"
 	"crypto/md5"
 	"go/token"
-	"falcao.it/gspec/filesystem"
-	. "falcao.it/gspec/scanner"
+	"github.com/gabrielfalcao/gspec/filesystem"
+	. "github.com/gabrielfalcao/gspec/scanner"
 )
 const INDENTATION_LEVEL = 2
 

@@ -1,5 +1,5 @@
 package foo
-import . "falcao.it/gspec"
+import . "github.com/gabrielfalcao/gspec"
 
 func Feature(){
 	Describe("The sum operation", func(){

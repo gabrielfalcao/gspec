@@ -1,6 +1,6 @@
 package main
 import (
-	"falcao.it/gspec"
+	"github.com/gabrielfalcao/gspec"
 )
 
 func main() {

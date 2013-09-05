@@ -6,7 +6,7 @@ import (
 	"go/token"
 	"go/parser"
 	"go/format"
-	"falcao.it/gspec/filesystem"
+	"github.com/gabrielfalcao/gspec/filesystem"
 )
 
 func HandleError(pos token.Position, msg string) {
