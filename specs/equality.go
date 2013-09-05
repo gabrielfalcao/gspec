@@ -18,7 +18,7 @@ func Feature(){
 		})
 		Then("the error message should be of easy cognition", func(){
 			defer Ensure.ItPanickedWithMessage("expected \"foo\" to equal \"bar\"")
-			Expect("foo").To.Equal("bar")
+			Expect(source).To.Equal(destination)
 		})
 	})
 }
