@@ -48,4 +48,4 @@ go run gspec.go ./foo/
 
 **And see the results**
 
-![running.gif](running.gif)
+![example.gif](example.gif)
