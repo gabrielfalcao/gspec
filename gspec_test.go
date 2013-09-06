@@ -38,7 +38,7 @@ func ensureNoPanicWhen(situation string) {
 }
 
 func (s *S) TestBasicAxiom(c *gocheck.C) {
-	// My first test axiom, as string should be comparable to another, abor
+	// My first test axiom, a string should be comparable to another
 	EXPECTED_MESSAGE := "expected \"foo\" to equal \"bar\""
 	defer ensureItPanickedWithMessage(EXPECTED_MESSAGE)
 
