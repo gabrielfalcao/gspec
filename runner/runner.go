@@ -30,6 +30,17 @@ func (self *Spec) Parse () (imports []byte, describes[]byte) {
 	imports, describes = ParseFile(self.Node, self.Parent.TokenFiles)
 	return
 }
+func (self *Spec) Hash() (sum string) {
+	hash := md5.New()
+	hash.Write([]byte(self.Node.Path()))
+	sum = fmt.Sprintf("%x", hash.Sum(nil))
+
+	return
+}
+
+func (self *Spec) GetFileName() string {
+	return fmt.Sprintf("gspec_%s.go", self.Hash())
+}
 
 func (self *SpecSet) Length () int {
 	return len(self.Nodes)
@@ -66,21 +77,21 @@ func (self *Runner) Run() {
 
 	curnode := filesystem.Node{self.WorkingDirectory}
 	files, err := self.RootNode.ListFiles()
+
 	if (err != nil) {
 		ReportError("path \"%s\" does not exist", os.Args[1])
 		return
 	}
-	fset := token.NewFileSet()
 
-	for _, file := range files {
-		imports, specs := ParseFile(file, *fset)
+	specs := NewSpecSet(files)
+
+	for spec := specs.Next(); spec != nil; spec = specs.Next() {
+		imports, specs := spec.Parse()
 		if len(specs) == 0 {
 			continue
 		}
-		hash := md5.New()
-		hash.Write([]byte(file.Path()))
 
-		specFileName := fmt.Sprintf("gspec_%x.go", hash.Sum(nil))
+		specFileName := spec.GetFileName()
 		specFile, err := self.RootNode.NewFile(specFileName)
 		if err != nil {
 			ReportError("%s", err)
@@ -94,7 +105,7 @@ func (self *Runner) Run() {
 		specFile.Close()
 		specnode := self.RootNode.Join(specFileName)
 
-		fmt.Printf("\033[35mHawkEye\033[1;37m is running \033[0;33m%s\033[0m...\n", curnode.RelPath(file))
+		fmt.Printf("\n\033[37mGSpec \033[0mis running %s...\n", curnode.RelPath(*spec.Node))
 
 		cmd := exec.Command("go", "run", specnode.Path())
 		cmd.Stdout = os.Stdout
