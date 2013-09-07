@@ -12,41 +12,41 @@ type Node struct {
 type NodeList []Node
 
 
-func (self *Node) IsGoFile() (bool){
+func (self Node) IsGoFile() (bool){
 	return strings.HasSuffix(self.GivenPath, ".go")
 }
-func (self *Node) Path() (abs string){
+func (self Node) Path() (abs string){
 	abs, _ = filepath.Abs(self.GivenPath)
 	return
 }
-func (self *Node) IsDir() (bool){
+func (self Node) IsDir() (bool){
 	info, err := self.Stat()
 	if err != nil {
 		panic("FUDEU MUITO!!!!:\n\n" )
 	}
 	return info.IsDir()
 }
-func (self *Node) Folder() (parent *Node){
+func (self Node) Folder() (parent *Node){
 	if self.IsDir() {
-		return self
+		return &self
 	} else {
 		other := self.Join("..")
 		return other
 	}
 }
-func (self *Node) Parent() (parent *Node){
+func (self Node) Parent() (parent *Node){
 	folder := self.Folder()
 	parent = folder.Join("..")
 	return
 }
-func (self *Node) Open() (file *os.File, err error) {
+func (self Node) Open() (file *os.File, err error) {
 	return os.Open(self.Path())
 }
-func (self *Node) Delete() error{
+func (self Node) Delete() error{
 	return os.Remove(self.Path())
 }
 
-func (self *Node) Stat() (info os.FileInfo, err error){
+func (self Node) Stat() (info os.FileInfo, err error){
 	file, err := self.Open()
 	if err != nil {
 		return
@@ -54,7 +54,7 @@ func (self *Node) Stat() (info os.FileInfo, err error){
 
 	return file.Stat()
 }
-func (self *Node) Read() (content []byte) {
+func (self Node) Read() (content []byte) {
 	file, err := self.Open()
 	if err != nil {
 		return []byte(err.Error())
@@ -62,15 +62,15 @@ func (self *Node) Read() (content []byte) {
 	content, _ = ioutil.ReadAll(file)
 	return
 }
-func (self *Node) NewFile(name string) (file *os.File, err error) {
+func (self Node) NewFile(name string) (file *os.File, err error) {
 	newNode := self.Join(name)
 	return os.Create(newNode.Path())
 }
-func (self *Node) RelPath(other Node) (rel string){
+func (self Node) RelPath(other Node) (rel string){
 	rel, _ = filepath.Rel(self.Path(), other.Path())
 	return
 }
-func (self *Node) Join(other string) *Node {
+func (self Node) Join(other string) *Node {
 	node, err := GetNode(filepath.Join(self.Path(), other))
 	if err != nil {
 		panic(err)
@@ -86,7 +86,7 @@ func MergeList (self NodeList, other NodeList) (result NodeList){
 	return
 }
 
-func (self *Node) ListFiles() (result NodeList, err error){
+func (self Node) ListFiles() (result NodeList, err error){
 	items, err := ioutil.ReadDir(self.Path())
 	if err != nil {
 		return nil, err

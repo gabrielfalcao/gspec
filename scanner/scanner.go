@@ -6,13 +6,18 @@ import (
 	"go/token"
 	"go/parser"
 	"go/format"
-	"github.com/gabrielfalcao/gspec/filesystem"
 )
+
+type Node interface {
+	Path() string
+	IsGoFile() bool
+	Read() []byte
+}
 
 func HandleError(pos token.Position, msg string) {
 }
 
-func ParseFile(node filesystem.Node, fset token.FileSet) (imports []byte, specs []byte) {
+func ParseFile(node Node, fset token.FileSet) (imports []byte, specs []byte) {
 	if !node.IsGoFile() {
 		return []byte{}, []byte{}
 	}

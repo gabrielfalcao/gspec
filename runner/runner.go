@@ -9,6 +9,44 @@ import (
 	. "github.com/gabrielfalcao/gspec/scanner"
 )
 
+type SpecSet struct {
+	Nodes []filesystem.Node
+	TokenFiles token.FileSet
+	currentPos int
+}
+
+func NewSpecSet (nodes []filesystem.Node) (set SpecSet) {
+	fset := token.NewFileSet()
+	set = SpecSet{nodes, *fset, 0}
+	return
+}
+
+type Spec struct {
+	Node *filesystem.Node
+	Parent *SpecSet
+}
+
+func (self *Spec) Parse () (imports []byte, describes[]byte) {
+	imports, describes = ParseFile(self.Node, self.Parent.TokenFiles)
+	return
+}
+
+func (self *SpecSet) Length () int {
+	return len(self.Nodes)
+}
+
+func (self *SpecSet) Next () (child *Spec) {
+	if (self.Length() > self.currentPos) {
+		node := &self.Nodes[self.currentPos]
+		child = &Spec{node, self}
+		self.currentPos++
+		return
+	}
+	return nil
+}
+
+
+
 type Runner struct {
 	RootNode *filesystem.Node
 	WorkingDirectory string
@@ -17,6 +55,7 @@ type Runner struct {
 func ReportError(message string, params ...interface{}){
 	fmt.Printf("\033[0;31mERROR: \033[1;37m%s\033[0m\n", fmt.Sprintf(message, params...))
 }
+
 
 func (self *Runner) Run() {
 	var err error
@@ -46,7 +85,6 @@ func (self *Runner) Run() {
 		if err != nil {
 			ReportError("%s", err)
 			return
-
 		}
 		specFile.Write([]byte("package main\n\n"))
 		specFile.Write(imports)
