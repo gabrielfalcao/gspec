@@ -26,6 +26,24 @@ type Spec struct {
 	Parent *SpecSet
 }
 
+func (self *Spec) PersistAt(root *filesystem.Node) (dest *filesystem.Node, err error) {
+	imports, specs := self.Parse()
+	filename := self.GetFileName()
+	specFile, err := root.NewFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	specFile.Write([]byte("package main\n\n"))
+	specFile.Write(imports)
+	specFile.Write([]byte("\nfunc main() {\n"))
+	specFile.Write(specs)
+	specFile.Write([]byte("\n}\n"))
+	specFile.Close()
+
+	dest = root.Join(filename)
+	return
+}
+
 func (self *Spec) Parse () (imports []byte, describes[]byte) {
 	imports, describes = ParseFile(self.Node, self.Parent.TokenFiles)
 	return
@@ -86,34 +104,23 @@ func (self *Runner) Run() {
 	specs := NewSpecSet(files)
 
 	for spec := specs.Next(); spec != nil; spec = specs.Next() {
-		imports, specs := spec.Parse()
-		if len(specs) == 0 {
+		var destinationNode *filesystem.Node
+
+		destinationNode, err := spec.PersistAt(self.RootNode)
+		if err != nil {
+			fmt.Printf("\n\033[37mignoring \033[33m%s\033[0m because %s\n", curnode.RelPath(*spec.Node), err)
 			continue
 		}
 
-		specFileName := spec.GetFileName()
-		specFile, err := self.RootNode.NewFile(specFileName)
-		if err != nil {
-			ReportError("%s", err)
-			return
-		}
-		specFile.Write([]byte("package main\n\n"))
-		specFile.Write(imports)
-		specFile.Write([]byte("\nfunc main() {\n"))
-		specFile.Write(specs)
-		specFile.Write([]byte("\n}\n"))
-		specFile.Close()
-		specnode := self.RootNode.Join(specFileName)
+		cmd := exec.Command("go", "run", destinationNode.Path())
 
-		fmt.Printf("\n\033[37mGSpec \033[0mis running %s...\n", curnode.RelPath(*spec.Node))
-
-		cmd := exec.Command("go", "run", specnode.Path())
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		err = cmd.Run()
-		specnode.Delete()
+
+		destinationNode.Delete()
 		if err != nil {
-			ReportError("exec: %s %s", err, specnode.Path())
+			ReportError("exec: %s %s", err, destinationNode.Path())
 			return
 		}
 	}
