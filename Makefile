@@ -1,6 +1,4 @@
 test:
-	go get launchpad.net/gocheck
-	go test -i .
-	go test .
-	@go run gspec/gspec.go foo
-	@go run gspec/gspec.go specs
+	@go test -i ./dsl
+	go test ./dsl
+	@go run gspec.go specs

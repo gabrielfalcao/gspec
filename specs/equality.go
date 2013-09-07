@@ -1,7 +1,7 @@
 package specs
 
 import (
-	. "github.com/gabrielfalcao/gspec"
+	. "github.com/gabrielfalcao/gspec/dsl"
 	Ensure "github.com/gabrielfalcao/gspec/ensure"
 )
 

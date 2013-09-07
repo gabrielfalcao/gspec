@@ -1,4 +1,4 @@
-package gspec
+package dsl
 
 import (
 	"os"
