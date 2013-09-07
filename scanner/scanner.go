@@ -1,4 +1,4 @@
-package gspec
+package scanner
 import (
 	"fmt"
 	"bytes"
