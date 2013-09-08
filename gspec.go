@@ -22,6 +22,6 @@ func main() {
 	}
 	workingDirectory, _ := os.Getwd()
 
-	application = runner.Runner{&locationOfSpecs, workingDirectory}
+	application = runner.Runner{&locationOfSpecs, workingDirectory, ":1988"}
 	application.Run()
 }

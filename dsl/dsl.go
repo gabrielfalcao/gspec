@@ -1,96 +1,72 @@
 package dsl
 import (
 	"fmt"
-	"strings"
+	"net/rpc"
 )
-const INDENTATION_LEVEL = 2
-
-var indent int
-
-type Expectation struct {
-	source interface{}
-	positive bool
-	To *Expectation
-	Not *Expectation
-}
-
-func (self *Expectation) Equal(other interface{}) {
-	// expected := fmt.Sprintf("%v", other)
-	// got := fmt.Sprintf("%v", self.source)
-	if self.source != other {
-		panic(fmt.Sprintf("expected \"%v\" to equal \"%v\"", self.source, other))
-	}
-}
-
+var indent = 0
 type TestCreator func(int) Expectation
 type TestCallback func()
 
 type TestResult struct {
-	error error
-	failure error
+	Description string
+	Traceback error
+	Level int
 }
-func (self *TestResult) Failure() error {
-	return self.failure
+type SpecContext struct {
+	ServerAddress string
 }
-func (self *TestResult) Error() error {
-	return self.error
+type SpecDescription struct {
+	Name string
 }
+
 func (self *TestResult) Passed() bool {
-	return self.error == nil && self.failure == nil
+	return self.Traceback == nil
 }
 
-func (self *TestResult) Failed() bool {
-	return self.failure != nil || self.error != nil
-}
+func (self SpecContext) Effectively(description string, spec TestCallback) {
+	client, err := rpc.DialHTTP("tcp", self.ServerAddress)
+	if err != nil {
+		fmt.Println("\033[31mDIAL ERROR:", err, "\033[0m")
+		return
+	}
 
-func Expect(source interface{}) Expectation{
-	// starting with a positive expectation
-	x := Expectation{source, true, nil, nil}
-	// and creating a link to self
-	x.To = &x
-	// and creating a respective negative expectation
-	x.Not = &Expectation{source, false, nil, nil}
-	// and its self link as well
-	x.Not.To = x.Not
-	return x
-}
-func Effectively(spec TestCallback) {
-	indent += INDENTATION_LEVEL
+	meta := SpecDescription{description}
+	client.Call("Runner.ReportBeginning", &meta, nil)
+
+	defer func(name string, level int){
+		var tb error
+		if err := recover(); err != nil {
+			tb = err.(error)
+		} else {
+			tb = nil
+		}
+
+		result := &TestResult{name, tb, level}
+
+		client.Call("Runner.ReportResult", result, nil)
+		if err != nil {
+			fmt.Println("\033[31mDIAL ERROR:", err, "\033[0m")
+		}
+	}(description, 0)
+
 	spec()
-	indent -= INDENTATION_LEVEL
 }
 
-func GetIndentation() string{
-	return strings.Repeat(" ", indent)
+func (self SpecContext) It(description string, run_da_spec TestCallback) {
+	self.Effectively(fmt.Sprintf("It %s", description), run_da_spec)
 }
-func ShowCallback(name, description string) {
-	indentation := GetIndentation()
-
-	fmt.Printf("%s\033[32m%s %s\033[0m\n", indentation, name, description)
+func (self SpecContext) Given(description string, run_da_spec TestCallback) {
+	self.Effectively(fmt.Sprintf("Given %s", description), run_da_spec)
 }
-func It(description string, run_da_spec TestCallback) {
-	ShowCallback("It", description)
-	Effectively(run_da_spec)
+func (self SpecContext) When(description string, run_da_spec TestCallback) {
+	self.Effectively(fmt.Sprintf("When %s", description), run_da_spec)
 }
-func Given(description string, run_da_spec TestCallback) {
-	ShowCallback("Given", description)
-	Effectively(run_da_spec)
+func (self SpecContext) Then(description string, run_da_spec TestCallback) {
+	self.Effectively(fmt.Sprintf("Then %s", description), run_da_spec)
 }
-func When(description string, run_da_spec TestCallback) {
-	ShowCallback("When", description)
-	Effectively(run_da_spec)
+func (self SpecContext) And(description string, run_da_spec TestCallback) {
+	self.Effectively(fmt.Sprintf("And %s", description), run_da_spec)
 }
-func Then(description string, run_da_spec TestCallback) {
-	ShowCallback("Then", description)
-	Effectively(run_da_spec)
-}
-func And(description string, run_da_spec TestCallback) {
-	ShowCallback("And", description)
-	Effectively(run_da_spec)
-}
-
-func Describe(description string, run_da_suite TestCallback) {
-	ShowCallback("Describe", description)
-	indent = 0
-	Effectively(run_da_suite)
+func (self SpecContext) Describe(description string, run_da_suite TestCallback) {
+	self.Effectively(fmt.Sprintf("Describe %s", description), run_da_suite)
 }
