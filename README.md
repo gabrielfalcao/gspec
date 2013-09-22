@@ -49,3 +49,7 @@ go run gspec.go ./foo/
 **And see the results**
 
 ![example.gif](example.gif)
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/gabrielfalcao/gspec/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
